@@ -1,25 +1,27 @@
-// main.js
+// Importamos las constantes necesarias para el juego
 import { SHAPES, TEXTURES } from './constants.js';
 
 class Tetris {
   constructor(rows = 20, cols = 10) {
-    this.rows = rows;
-    this.cols = cols;
-    this.board = this.createBoard();
-    this.score = 0;
-    this.level = 1;
-    this.combo = 0;
-    this.gameOver = false;
-    this.currentPiece = this.newPiece();
-    this.nextPiece = this.newPiece();
-    this.holdPiece = null;
-    this.canHold = true;
+    this.rows = rows;  // Número de filas del tablero
+    this.cols = cols;  // Número de columnas del tablero
+    this.board = this.createBoard();  // Creamos el tablero
+    this.score = 0;  // Puntuación inicial
+    this.level = 1;  // Nivel inicial
+    this.combo = 0;  // Contador de combo
+    this.gameOver = false;  // Estado del juego
+    this.currentPiece = this.newPiece();  // Pieza actual
+    this.nextPiece = this.newPiece();  // Siguiente pieza
+    this.holdPiece = null;  // Pieza guardada
+    this.canHold = true;  // Indica si se puede guardar una pieza
   }
 
+  // Crea un tablero vacío
   createBoard() {
     return Array.from({ length: this.rows }, () => Array(this.cols).fill(0));
   }
 
+  // Genera una nueva pieza aleatoria
   newPiece() {
     const shapeNames = Object.keys(SHAPES);
     const randomShape = shapeNames[Math.floor(Math.random() * shapeNames.length)];
@@ -31,6 +33,7 @@ class Tetris {
     };
   }
 
+  // Verifica si un movimiento es válido
   isValidMove(piece, offsetX, offsetY) {
     for (let y = 0; y < piece.shape.length; y++) {
       for (let x = 0; x < piece.shape[y].length; x++) {
@@ -46,6 +49,7 @@ class Tetris {
     return true;
   }
 
+  // Mueve la pieza actual
   movePiece(offsetX, offsetY) {
     if (this.isValidMove(this.currentPiece, offsetX, offsetY)) {
       this.currentPiece.x += offsetX;
@@ -55,6 +59,7 @@ class Tetris {
     return false;
   }
 
+  // Rota la pieza actual
   rotatePiece() {
     const rotated = this.currentPiece.shape[0].map((_, index) =>
       this.currentPiece.shape.map(row => row[index]).reverse()
@@ -66,11 +71,13 @@ class Tetris {
     }
   }
 
+  // Deja caer la pieza hasta el fondo
   dropPiece() {
     while (this.movePiece(0, 1)) {}
     this.lockPiece();
   }
 
+  // Fija la pieza actual al tablero
   lockPiece() {
     for (let y = 0; y < this.currentPiece.shape.length; y++) {
       for (let x = 0; x < this.currentPiece.shape[y].length; x++) {
@@ -88,6 +95,7 @@ class Tetris {
     }
   }
 
+  // Elimina las líneas completas y actualiza la puntuación
   clearLines() {
     let linesCleared = 0;
     for (let y = this.rows - 1; y >= 0; y--) {
@@ -101,6 +109,7 @@ class Tetris {
     this.updateScore(linesCleared);
   }
 
+  // Actualiza la puntuación y el nivel
   updateScore(linesCleared) {
     const points = [0, 40, 100, 300, 1200];
     if (linesCleared > 0) {
@@ -117,6 +126,7 @@ class Tetris {
     }
   }
 
+  // Función para guardar/intercambiar la pieza actual
   holdPieceFunction() {
     if (this.canHold) {
       if (this.holdPiece === null) {
@@ -135,6 +145,7 @@ class Tetris {
     }
   }
 
+  // Obtiene la posición de la pieza fantasma
   getGhostPiecePosition() {
     const ghostPiece = { ...this.currentPiece };
     while (this.isValidMove(ghostPiece, 0, 1)) {
@@ -143,6 +154,7 @@ class Tetris {
     return ghostPiece;
   }
 
+  // Dibuja todos los elementos del juego
   draw() {
     this.drawBoard();
     this.drawGhostPiece();
@@ -151,6 +163,7 @@ class Tetris {
     this.drawHoldPiece();
   }
 
+  // Dibuja el tablero
   drawBoard() {
     const boardElement = document.getElementById('tetris-board');
     boardElement.innerHTML = '';
@@ -167,20 +180,24 @@ class Tetris {
     }
   }
 
+  // Dibuja la pieza actual
   drawCurrentPiece() {
     this.drawPiece(this.currentPiece, 'tetris-board');
   }
 
+  // Dibuja la pieza fantasma
   drawGhostPiece() {
     const ghostPiece = this.getGhostPiecePosition();
     this.drawPiece(ghostPiece, 'tetris-board', true);
   }
 
+  // Dibuja la siguiente pieza
   drawNextPiece() {
     const nextPieceElement = document.getElementById('next-piece');
     this.drawPieceInContainer(this.nextPiece, nextPieceElement);
   }
 
+  // Dibuja la pieza guardada
   drawHoldPiece() {
     const holdPieceElement = document.getElementById('hold-piece');
     if (this.holdPiece) {
@@ -190,6 +207,7 @@ class Tetris {
     }
   }
 
+  // Dibuja una pieza en el tablero
   drawPiece(piece, containerId, isGhost = false) {
     for (let y = 0; y < piece.shape.length; y++) {
       for (let x = 0; x < piece.shape[y].length; x++) {
@@ -211,6 +229,7 @@ class Tetris {
     }
   }
 
+  // Dibuja una pieza en un contenedor específico
   drawPieceInContainer(piece, container) {
     container.innerHTML = '';
     container.style.display = 'grid';
@@ -229,6 +248,7 @@ class Tetris {
     }
   }
 
+  // Aplica una textura a una celda
   applyTexture(cell, texture) {
     cell.style.backgroundColor = texture.color;
     cell.style.backgroundImage = `url('textures.svg')`;
@@ -236,6 +256,7 @@ class Tetris {
     cell.style.backgroundSize = '400px 100px';
   }
 
+  // Bucle principal del juego
   gameLoop() {
     if (!this.gameOver) {
       if (!this.movePiece(0, 1)) {
@@ -247,12 +268,14 @@ class Tetris {
     }
   }
 
+  // Muestra la pantalla de fin de juego
   showGameOver() {
     const gameOverElement = document.getElementById('game-over');
     gameOverElement.style.display = 'block';
     document.getElementById('final-score').textContent = this.score;
   }
 
+  // Reinicia el juego
   restart() {
     this.board = this.createBoard();
     this.score = 0;
@@ -271,10 +294,10 @@ class Tetris {
   }
 }
 
-// Initialize game
+// Inicializa el juego
 const game = new Tetris();
 
-// Set up keyboard controls
+// Configura los controles de teclado
 document.addEventListener('keydown', (e) => {
   if (!game.gameOver) {
     switch (e.key) {
@@ -302,12 +325,12 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Set up restart button
+// Configura el botón de reinicio
 document.getElementById('restart-button').addEventListener('click', () => {
   game.restart();
 });
 
-// Start game loop
+// Inicia el bucle del juego
 function gameLoop() {
   game.gameLoop();
   setTimeout(gameLoop, 1000 - (game.level - 1) * 50);
@@ -315,4 +338,5 @@ function gameLoop() {
 
 gameLoop();
 
-// Initial draw
+// Dibuja el estado inicial del juego
+game.draw();
